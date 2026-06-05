@@ -1,0 +1,523 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>OCR MEI B — Question Bank</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --teal:#0d9488;--text:#111827;--muted:#6b7280;--border:#e5e7eb;--bg:#f3f4f6;
+  --white:#ffffff;--font:'Inter',sans-serif;
+}
+body{background:var(--bg);color:var(--text);font-family:var(--font);font-size:14px;min-height:100vh}
+.header{background:var(--white);border-bottom:1px solid var(--border);padding:0 24px;display:flex;align-items:center;gap:16px;height:56px;position:sticky;top:0;z-index:100}
+.logo{font-size:22px;font-weight:700;letter-spacing:-0.5px}
+.logo span{color:var(--teal)}
+.progress-text{font-size:13px;color:var(--muted)}
+.header-right{margin-left:auto;display:flex;align-items:center;gap:8px}
+.header-btn{background:var(--white);border:1px solid var(--border);color:var(--text);font-family:var(--font);font-size:13px;font-weight:500;padding:6px 14px;border-radius:6px;cursor:pointer}
+.header-btn:hover{background:var(--bg)}
+.filters{background:var(--white);border-bottom:1px solid var(--border);padding:12px 24px;display:flex;flex-direction:column;gap:10px}
+.filter-row{display:flex;gap:10px;flex-wrap:wrap}
+.filter-select{background:var(--white);border:1px solid var(--border);color:var(--text);font-family:var(--font);font-size:13px;padding:7px 32px 7px 12px;border-radius:6px;cursor:pointer;appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%236b7280' d='M6 8L1 3h10z'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 10px center;min-width:200px;flex:1}
+.filter-select:focus{outline:none;border-color:var(--teal)}
+.filter-input{background:var(--white);border:1px solid var(--border);color:var(--text);font-family:var(--font);font-size:13px;padding:7px 12px;border-radius:6px;flex:1;min-width:140px}
+.filter-input:focus{outline:none;border-color:var(--teal)}
+.filter-input::placeholder{color:var(--muted)}
+.status-checks{display:flex;align-items:center;gap:16px;flex:1}
+.check-label{display:flex;align-items:center;gap:6px;font-size:13px;cursor:pointer}
+.check-label input[type=checkbox]{accent-color:var(--teal);width:15px;height:15px}
+.results-bar{padding:12px 24px;font-size:13px;color:var(--muted)}
+.results-bar strong{color:var(--text);font-weight:600}
+.grid{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;padding:0 24px 32px}
+@media(max-width:1100px){.grid{grid-template-columns:repeat(3,1fr)}}
+@media(max-width:800px){.grid{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:500px){.grid{grid-template-columns:1fr}}
+.card{background:var(--white);border:1px solid var(--border);border-radius:8px;overflow:hidden;display:flex;flex-direction:column;cursor:pointer;transition:box-shadow 0.15s,border-color 0.15s}
+.card:hover{box-shadow:0 2px 12px rgba(0,0,0,0.08);border-color:#d1d5db}
+.card.status-done{background:#f0fdf4;border-color:#bbf7d0}
+.card.status-done:hover{border-color:#86efac}
+.card.status-review{background:#fef2f2;border-color:#fecaca}
+.card.status-review:hover{border-color:#fca5a5}
+.card-top{padding:10px 12px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;gap:6px}
+.card-meta{font-size:12px;font-weight:500;color:var(--teal)}
+.card-meta-paper{color:var(--muted);font-weight:400}
+.card-status-btn{width:18px;height:18px;border-radius:50%;border:1.5px solid var(--border);background:var(--white);cursor:pointer;flex-shrink:0}
+.card-status-btn.done{background:var(--teal);border-color:var(--teal)}
+.card-status-btn.review{background:#fbbf24;border-color:#fbbf24}
+.card-img-area{background:#f9fafb;border-bottom:1px solid var(--border);min-height:180px;display:flex;align-items:center;justify-content:center;overflow:hidden;flex:1}
+.card-img-area img{width:100%;display:block;object-fit:cover;max-height:220px}
+.card-img-placeholder{display:flex;flex-direction:column;align-items:center;gap:8px;color:#d1d5db}
+.card-img-placeholder span{font-size:11px;color:var(--muted)}
+.card-footer{padding:10px 12px}
+.card-qnum{font-size:14px;font-weight:700;margin-bottom:2px}
+.card-qmarks{font-weight:400;font-size:12px;color:var(--muted)}
+.card-topic{font-size:13px;color:var(--teal);font-weight:500;margin-bottom:8px}
+.card-links{display:flex;align-items:center}
+.card-link{font-size:12px;font-weight:600;color:var(--teal);background:none;border:none;cursor:pointer;padding:0}
+.card-link:hover{text-decoration:underline}
+.card-link-sep{color:var(--border);margin:0 6px;font-size:12px}
+.add-card{background:var(--white);border:1.5px dashed var(--border);border-radius:8px;display:flex;align-items:center;justify-content:center;min-height:260px;cursor:pointer;color:var(--muted);font-size:13px;gap:6px}
+.add-card:hover{border-color:var(--teal);color:var(--teal)}
+
+/* QUESTION VIEW */
+.qview{display:none;position:fixed;inset:0;background:var(--bg);z-index:200;flex-direction:column}
+.qview.show{display:flex}
+.qview-header{background:var(--white);border-bottom:1px solid var(--border);padding:0 24px;height:56px;display:flex;align-items:center;gap:16px;position:sticky;top:0;z-index:10}
+.qview-back{background:none;border:none;font-family:var(--font);font-size:13px;color:var(--muted);cursor:pointer;display:flex;align-items:center;gap:4px;padding:0}
+.qview-back:hover{color:var(--text)}
+.qview-headermeta{font-size:13px;color:var(--muted)}
+.qview-headermeta strong{color:var(--text);font-weight:600}
+.qview-status-btn{width:20px;height:20px;border-radius:50%;border:1.5px solid var(--border);background:var(--white);cursor:pointer;margin-left:auto}
+.qview-status-btn.done{background:var(--teal);border-color:var(--teal)}
+.qview-status-btn.review{background:#fbbf24;border-color:#fbbf24}
+.qview-body{max-width:900px;width:100%;margin:0 auto;padding:24px;flex:1;overflow-y:auto}
+.qview-area-row{font-size:12px;color:var(--muted);margin-bottom:4px;display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:16px}
+.qview-area-label{font-weight:600;color:var(--text);font-size:12px}
+.qview-topic-pill{background:#f3f4f6;border:1px solid var(--border);border-radius:20px;padding:2px 10px;font-size:12px;color:var(--text)}
+.qview-tabs{display:flex;margin-bottom:0}
+.qview-tab{background:none;border:1px solid var(--border);border-bottom:none;font-family:var(--font);font-size:13px;font-weight:500;padding:8px 20px;cursor:pointer;color:var(--muted);border-radius:6px 6px 0 0;margin-right:4px}
+.qview-tab.active{background:var(--white);color:var(--text)}
+.qview-content{background:var(--white);border:1px solid var(--border);border-radius:0 6px 6px 6px;min-height:400px;display:flex;align-items:center;justify-content:center;overflow:hidden;position:relative;cursor:pointer}
+.qview-content img{max-width:100%;display:block}
+.qview-placeholder{display:flex;flex-direction:column;align-items:center;gap:12px;color:var(--muted);padding:60px;pointer-events:none}
+.qview-placeholder span{font-size:13px}
+.qview-upload-input{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%}
+.qview-img-wrap{width:100%;position:relative}
+.qview-img-wrap img{width:100%;display:block}
+.qview-img-remove{position:absolute;top:10px;right:10px;background:rgba(0,0,0,0.5);border:none;color:#fff;font-size:11px;padding:3px 8px;border-radius:3px;cursor:pointer;z-index:2}
+.qview-footer{max-width:900px;width:100%;margin:0 auto;padding:12px 24px;display:flex;align-items:center;gap:16px;border-top:1px solid var(--border);background:var(--white);flex-shrink:0}
+.qview-footer-btn{font-size:13px;font-weight:500;color:var(--teal);background:none;border:none;cursor:pointer;padding:0}
+.qview-footer-btn:hover{text-decoration:underline}
+.qview-footer-sep{color:var(--border)}
+
+/* ADD MODAL */
+.modal-bg{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.35);z-index:300;align-items:center;justify-content:center}
+.modal-bg.show{display:flex}
+.modal{background:var(--white);border-radius:10px;padding:24px;width:360px}
+.modal h2{font-size:16px;font-weight:600;margin-bottom:16px}
+.modal-field{margin-bottom:12px}
+.modal-field label{display:block;font-size:11px;font-weight:600;color:var(--muted);margin-bottom:4px;text-transform:uppercase;letter-spacing:0.5px}
+.modal-field input,.modal-field select{width:100%;border:1px solid var(--border);border-radius:6px;padding:7px 10px;font-family:var(--font);font-size:13px;color:var(--text)}
+.modal-field input:focus,.modal-field select:focus{outline:none;border-color:var(--teal)}
+.modal-actions{display:flex;gap:8px;margin-top:16px;justify-content:flex-end}
+.btn-primary{background:var(--teal);color:#fff;border:none;border-radius:6px;padding:7px 18px;font-family:var(--font);font-size:13px;font-weight:500;cursor:pointer}
+.btn-primary:hover{background:#0f766e}
+.btn-secondary{background:var(--white);color:var(--text);border:1px solid var(--border);border-radius:6px;padding:7px 18px;font-family:var(--font);font-size:13px;cursor:pointer}
+.btn-secondary:hover{background:var(--bg)}
+.empty-state{grid-column:1/-1;text-align:center;padding:60px;color:var(--muted);font-size:14px}
+.edit-row{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:16px;align-items:flex-end}
+.edit-field{display:flex;flex-direction:column;gap:4px}
+.edit-field label{font-size:11px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:0.5px}
+.edit-field input,.edit-field select{border:1px solid var(--border);border-radius:6px;padding:5px 8px;font-family:var(--font);font-size:13px;color:var(--text);background:var(--white)}
+.edit-field input:focus,.edit-field select:focus{outline:none;border-color:var(--teal)}
+.edit-field input{width:110px}
+.edit-field.wide input{width:160px}
+.edit-field select{width:200px}
+</style>
+</head>
+<body>
+
+<div id="list-view">
+  <div class="header">
+    <div class="logo">OCR MEI<span>B</span></div>
+    <div class="progress-text" id="progress-text">0/0 done (0%)</div>
+    <div class="header-right">
+      <button class="header-btn" onclick="exportData()">Export</button>
+      <label class="header-btn" style="cursor:pointer">Import<input type="file" accept=".json" onchange="importData(this)" style="display:none"></label>
+      <button class="header-btn" onclick="clearFilters()">Clear filters</button>
+    </div>
+  </div>
+  <div class="filters">
+    <div class="filter-row">
+      <select class="filter-select" id="f-paper" onchange="applyFilters()">
+        <option value="">Paper</option>
+        <option>Y433 — Algorithms</option>
+        <option>Y431 — Mechanics</option>
+        <option>Y432 — Statistics</option>
+        <option>H640/01 — Pure and Mechanics</option>
+        <option>H640/02 — Pure and Statistics</option>
+        <option>H640/03 — Pure and Comprehension</option>
+      </select>
+      <select class="filter-select" id="f-year" onchange="applyFilters()"><option value="">Year</option></select>
+      <select class="filter-select" id="f-topic" onchange="applyFilters()"><option value="">Topic</option></select>
+    </div>
+    <div class="filter-row">
+      <div class="status-checks">
+        <label class="check-label"><input type="checkbox" id="f-done" onchange="applyFilters()"> Done</label>
+        <label class="check-label"><input type="checkbox" id="f-notdone" onchange="applyFilters()"> Not done</label>
+        <label class="check-label"><input type="checkbox" id="f-review" onchange="applyFilters()"> To review</label>
+      </div>
+      <input class="filter-input" style="max-width:160px" type="text" id="f-qnum" placeholder="Question #" oninput="applyFilters()">
+    </div>
+  </div>
+  <div class="results-bar"><strong id="result-count">0</strong> questions found</div>
+  <div class="grid" id="grid"></div>
+</div>
+
+<!-- QUESTION VIEW -->
+<div class="qview" id="qview">
+  <div class="qview-header">
+    <button class="qview-back" onclick="closeQView()">← Back</button>
+    <div class="qview-headermeta" id="qview-headermeta"></div>
+    <button class="qview-status-btn" id="qview-status-btn" onclick="cycleStatusCurrent()" title="Cycle status"></button>
+  </div>
+  <div class="qview-body">
+    <div class="edit-row" id="qview-edit-row"></div>
+    <div class="qview-tabs">
+      <button class="qview-tab active" id="tab-q" onclick="switchTab('q')">Question</button>
+      <button class="qview-tab" id="tab-ms" onclick="switchTab('ms')">Mark scheme</button>
+      <button class="qview-tab" id="tab-ans" onclick="switchTab('ans')">My answer</button>
+    </div>
+    <div class="qview-content" id="qview-content">
+      <div class="qview-placeholder" id="qview-placeholder">
+        <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg>
+        <span>Click to upload screenshot</span>
+      </div>
+      <div class="qview-img-wrap" id="qview-img-wrap" style="display:none">
+        <img id="qview-img" src="" alt="">
+        <button class="qview-img-remove" onclick="removeQViewImg(event)">remove</button>
+      </div>
+      <input type="file" accept="image/*" class="qview-upload-input" id="qview-file-input" onchange="handleQViewUpload(this)">
+    </div>
+  </div>
+  <div class="qview-footer">
+    <button class="qview-footer-btn" onclick="document.getElementById('qview-file-input').click()">Save image</button>
+    <span class="qview-footer-sep">·</span>
+    <button class="qview-footer-btn" onclick="switchTab('q')">Question paper</button>
+    <span class="qview-footer-sep">·</span>
+    <button class="qview-footer-btn" onclick="switchTab('ms')">Mark scheme</button>
+    <span class="qview-footer-sep">·</span>
+    <button class="qview-footer-btn" onclick="switchTab('ans')">My answer</button>
+    <span style="margin-left:auto;display:flex;align-items:center;gap:10px">
+      <button class="qview-footer-btn" id="btn-prev" onclick="navigateQ(-1)">← Prev</button>
+      <span id="nav-pos" style="font-size:12px;color:var(--muted);min-width:40px;text-align:center"></span>
+      <button class="qview-footer-btn" id="btn-next" onclick="navigateQ(1)">Next →</button>
+      <span class="qview-footer-sep">·</span>
+      <button class="qview-footer-btn" style="color:#ef4444" onclick="deleteCurrentQ()">Delete question</button>
+    </span>
+  </div>
+</div>
+
+<!-- ADD MODAL -->
+<div class="modal-bg" id="modal">
+  <div class="modal">
+    <h2>Add question</h2>
+    <div class="modal-field"><label>Paper</label>
+      <select id="m-paper">
+        <option>Y433 — Algorithms</option>
+        <option>Y431 — Mechanics</option>
+        <option>Y432 — Statistics</option>
+        <option>H640/01 — Pure and Mechanics</option>
+        <option>H640/02 — Pure and Statistics</option>
+        <option>H640/03 — Pure and Comprehension</option>
+      </select>
+    </div>
+    <div class="modal-field"><label>Year / Session</label><input id="m-year" placeholder="e.g. June 2023"></div>
+    <div class="modal-field"><label>Question number</label><input id="m-qnum" type="number" min="1" placeholder="e.g. 3"></div>
+    <div class="modal-field"><label>Topic</label><input id="m-topic" placeholder="e.g. Simplex method"></div>
+    <div class="modal-field"><label>Marks</label><input id="m-marks" type="number" min="1" placeholder="e.g. 8"></div>
+    <div class="modal-actions">
+      <button class="btn-secondary" onclick="closeModal()">Cancel</button>
+      <button class="btn-primary" onclick="confirmAdd()">Add</button>
+    </div>
+  </div>
+</div>
+
+<script>
+let questions = [];
+let filtered = [];
+let currentQId = null;
+let currentTab = 'q';
+let db = null;
+
+// IndexedDB setup
+function initDB() {
+  return new Promise((resolve, reject) => {
+    const req = indexedDB.open('ocrmei_db', 1);
+    req.onupgradeneeded = e => {
+      const d = e.target.result;
+      if (!d.objectStoreNames.contains('questions')) {
+        d.createObjectStore('questions', {keyPath: 'id'});
+      }
+    };
+    req.onsuccess = e => { db = e.target.result; resolve(); };
+    req.onerror = () => reject('IndexedDB failed to open');
+  });
+}
+
+function saveQuestion(q) {
+  return new Promise(resolve => {
+    const tx = db.transaction('questions', 'readwrite');
+    tx.objectStore('questions').put(q);
+    tx.oncomplete = resolve;
+  });
+}
+
+function deleteQuestionDB(id) {
+  return new Promise(resolve => {
+    const tx = db.transaction('questions', 'readwrite');
+    tx.objectStore('questions').delete(id);
+    tx.oncomplete = resolve;
+  });
+}
+
+function loadAllQuestions() {
+  return new Promise(resolve => {
+    const tx = db.transaction('questions', 'readonly');
+    const req = tx.objectStore('questions').getAll();
+    req.onsuccess = e => resolve(e.target.result || []);
+  });
+}
+
+// save current question only (not all questions — much faster)
+function save(q) {
+  if (q) return saveQuestion(q);
+  // save all (used for import)
+  return Promise.all(questions.map(q => saveQuestion(q)));
+}
+
+function compressImage(dataUrl, callback) {
+  const img = new Image();
+  img.onload = () => {
+    const canvas = document.createElement('canvas');
+    const MAX = 1400;
+    let w = img.width, h = img.height;
+    if (w > MAX) { h = Math.round(h * MAX / w); w = MAX; }
+    if (h > MAX) { w = Math.round(w * MAX / h); h = MAX; }
+    canvas.width = w; canvas.height = h;
+    canvas.getContext('2d').drawImage(img, 0, 0, w, h);
+    callback(canvas.toDataURL('image/jpeg', 0.82));
+  };
+  img.src = dataUrl;
+}
+
+function exportData() {
+  const blob = new Blob([JSON.stringify(questions,null,2)],{type:'application/json'});
+  const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'ocrmei-backup.json'; a.click();
+}
+function importData(input) {
+  const file = input.files[0]; if (!file) return;
+  const r = new FileReader();
+  r.onload = async e => {
+    try {
+      const d = JSON.parse(e.target.result);
+      if (Array.isArray(d)) {
+        questions = d;
+        await save(null);
+        applyFilters();
+        alert('Imported ' + d.length + ' questions.');
+      }
+    } catch { alert('Invalid file.'); }
+  };
+  r.readAsText(file);
+}
+function openModal() { document.getElementById('modal').classList.add('show'); }
+function closeModal() { document.getElementById('modal').classList.remove('show'); }
+function confirmAdd() {
+  const year = document.getElementById('m-year').value.trim();
+  const qnum = document.getElementById('m-qnum').value.trim();
+  if (!year||!qnum) { alert('Year and question number are required.'); return; }
+  const q = {id:Date.now().toString(), paper:document.getElementById('m-paper').value, year, qnum:+qnum, topic:document.getElementById('m-topic').value.trim(), marks:+document.getElementById('m-marks').value||0, status:'none', qImg:null, msImg:null, ansImg:null};
+  questions.push(q);
+  save(q).then(() => { closeModal(); applyFilters(); });
+}
+function cycleStatus(id) {
+  const q = questions.find(x=>x.id===id); if (!q) return;
+  q.status = {none:'done',done:'review',review:'none'}[q.status]||'none';
+  save(q).then(() => { applyFilters(); if (currentQId===id) updateQViewStatus(); });
+}
+function cycleStatusCurrent() { if (currentQId) cycleStatus(currentQId); }
+
+function navigateQ(dir) {
+  if (!currentQId) return;
+  const idx = filtered.findIndex(x => x.id === currentQId);
+  if (idx === -1) return;
+  const target = filtered[idx + dir];
+  if (target) openQView(target.id);
+}
+function updateNavButtons() {
+  const idx = filtered.findIndex(x => x.id === currentQId);
+  const prevBtn = document.getElementById('btn-prev');
+  const nextBtn = document.getElementById('btn-next');
+  const pos = document.getElementById('nav-pos');
+  prevBtn.disabled = idx <= 0;
+  prevBtn.style.opacity = idx <= 0 ? '0.35' : '1';
+  nextBtn.disabled = idx >= filtered.length - 1;
+  nextBtn.style.opacity = idx >= filtered.length - 1 ? '0.35' : '1';
+  pos.textContent = filtered.length ? `${idx + 1} / ${filtered.length}` : '';
+}
+
+function renderEditRow(q) {
+  document.getElementById('qview-edit-row').innerHTML = `
+    <div class="edit-field">
+      <label>Paper</label>
+      <select onchange="updateQField('${q.id}','paper',this.value)">
+        <option${q.paper==='Y433 — Algorithms'?' selected':''}>Y433 — Algorithms</option>
+        <option${q.paper==='Y431 — Mechanics'?' selected':''}>Y431 — Mechanics</option>
+        <option${q.paper==='Y432 — Statistics'?' selected':''}>Y432 — Statistics</option>
+        <option${q.paper==='H640/01 — Pure and Mechanics'?' selected':''}>H640/01 — Pure and Mechanics</option>
+        <option${q.paper==='H640/02 — Pure and Statistics'?' selected':''}>H640/02 — Pure and Statistics</option>
+        <option${q.paper==='H640/03 — Pure and Comprehension'?' selected':''}>H640/03 — Pure and Comprehension</option>
+      </select>
+    </div>
+    <div class="edit-field wide">
+      <label>Year / Session</label>
+      <input value="${q.year||''}" placeholder="e.g. June 2023" onchange="updateQField('${q.id}','year',this.value)">
+    </div>
+    <div class="edit-field">
+      <label>Q no.</label>
+      <input type="number" value="${q.qnum||''}" placeholder="e.g. 3" onchange="updateQField('${q.id}','qnum',+this.value)">
+    </div>
+    <div class="edit-field wide">
+      <label>Topic</label>
+      <input value="${q.topic||''}" placeholder="e.g. Simplex method" onchange="updateQField('${q.id}','topic',this.value)">
+    </div>
+    <div class="edit-field">
+      <label>Marks</label>
+      <input type="number" value="${q.marks||''}" placeholder="e.g. 8" onchange="updateQField('${q.id}','marks',+this.value)">
+    </div>`;
+}
+
+function updateQField(id, field, val) {
+  const q = questions.find(x=>x.id===id); if (!q) return;
+  q[field] = val;
+  save(q).then(() => {
+    document.getElementById('qview-headermeta').innerHTML = `<strong>${q.paper}</strong> &nbsp;·&nbsp; ${q.year}`;
+  });
+}
+
+function openQView(id) {
+  currentQId=id; currentTab='q';
+  const q = questions.find(x=>x.id===id); if (!q) return;
+  document.getElementById('list-view').style.display='none';
+  document.getElementById('qview').classList.add('show');
+  document.getElementById('qview-headermeta').innerHTML=`<strong>${q.paper}</strong> &nbsp;·&nbsp; ${q.year}`;
+  renderEditRow(q);
+  updateQViewStatus(); renderQViewContent(); updateNavButtons();
+}
+function closeQView() {
+  currentQId=null;
+  document.getElementById('list-view').style.display='';
+  document.getElementById('qview').classList.remove('show');
+  applyFilters();
+}
+function updateQViewStatus() {
+  const q = questions.find(x=>x.id===currentQId);
+  const btn = document.getElementById('qview-status-btn');
+  btn.className='qview-status-btn'+(q?.status==='done'?' done':q?.status==='review'?' review':'');
+}
+function switchTab(tab) {
+  currentTab=tab;
+  document.getElementById('tab-q').classList.toggle('active',tab==='q');
+  document.getElementById('tab-ms').classList.toggle('active',tab==='ms');
+  document.getElementById('tab-ans').classList.toggle('active',tab==='ans');
+  renderQViewContent();
+}
+function renderQViewContent() {
+  const q = questions.find(x=>x.id===currentQId); if (!q) return;
+  const img = currentTab==='q' ? q.qImg : currentTab==='ms' ? q.msImg : q.ansImg;
+  document.getElementById('qview-placeholder').style.display = img ? 'none' : 'flex';
+  document.getElementById('qview-img-wrap').style.display = img ? 'block' : 'none';
+  if (img) document.getElementById('qview-img').src = img;
+}
+function handleQViewUpload(input) {
+  const file = input.files[0]; if (!file) return;
+  const r = new FileReader();
+  r.onload = e => {
+    const q = questions.find(x=>x.id===currentQId); if (!q) return;
+    const field = currentTab==='q' ? 'qImg' : currentTab==='ms' ? 'msImg' : 'ansImg';
+    compressImage(e.target.result, compressed => {
+      q[field] = compressed;
+      save(q).then(() => renderQViewContent());
+    });
+  };
+  r.readAsDataURL(file);
+}
+function removeQViewImg(e) {
+  e.stopPropagation();
+  const q = questions.find(x=>x.id===currentQId); if (!q) return;
+  const field = currentTab==='q' ? 'qImg' : currentTab==='ms' ? 'msImg' : 'ansImg';
+  q[field] = null;
+  save(q).then(() => renderQViewContent());
+}
+function deleteCurrentQ() {
+  if (!confirm('Delete this question?')) return;
+  const id = currentQId;
+  questions = questions.filter(x=>x.id!==id);
+  deleteQuestionDB(id).then(() => closeQView());
+}
+
+function updateDropdowns() {
+  const years = [...new Set(questions.map(q=>q.year).filter(Boolean))].sort().reverse();
+  const topics = [...new Set(questions.map(q=>q.topic).filter(Boolean))].sort();
+  const ysel=document.getElementById('f-year'), tsel=document.getElementById('f-topic');
+  const curY=ysel.value, curT=tsel.value;
+  ysel.innerHTML='<option value="">Year</option>'+years.map(y=>`<option${y===curY?' selected':''}>${y}</option>`).join('');
+  tsel.innerHTML='<option value="">Topic</option>'+topics.map(t=>`<option${t===curT?' selected':''}>${t}</option>`).join('');
+}
+function applyFilters() {
+  updateDropdowns();
+  const paper=document.getElementById('f-paper').value;
+  const year=document.getElementById('f-year').value;
+  const topic=document.getElementById('f-topic').value;
+  const qnum=document.getElementById('f-qnum').value.trim();
+  const fD=document.getElementById('f-done').checked;
+  const fN=document.getElementById('f-notdone').checked;
+  const fR=document.getElementById('f-review').checked;
+  filtered=questions.filter(q=>{
+    if (paper&&q.paper!==paper) return false;
+    if (year&&q.year!==year) return false;
+    if (topic&&q.topic!==topic) return false;
+    if (qnum&&String(q.qnum)!==qnum) return false;
+    if (fD||fN||fR){
+      if (fD&&q.status==='done') return true;
+      if (fN&&q.status==='none') return true;
+      if (fR&&q.status==='review') return true;
+      return false;
+    }
+    return true;
+  });
+  document.getElementById('result-count').textContent=filtered.length;
+  const done=questions.filter(q=>q.status==='done').length;
+  const total=questions.length;
+  document.getElementById('progress-text').textContent=`${done}/${total} done (${total?Math.round(done/total*100):0}%)`;
+  renderGrid();
+}
+function clearFilters() {
+  ['f-paper','f-year','f-topic'].forEach(id=>document.getElementById(id).value='');
+  document.getElementById('f-qnum').value='';
+  ['f-done','f-notdone','f-review'].forEach(id=>document.getElementById(id).checked=false);
+  applyFilters();
+}
+function renderGrid() {
+  const grid=document.getElementById('grid');
+  let html=filtered.length?filtered.map(q=>`
+    <div class="card${q.status==='done'?' status-done':q.status==='review'?' status-review':''}" onclick="openQView('${q.id}')">
+      <div class="card-top">
+        <div class="card-meta">${q.paper}<span class="card-meta-paper"> · ${q.year}</span></div>
+        <button class="card-status-btn ${q.status==='done'?'done':q.status==='review'?'review':''}" onclick="event.stopPropagation();cycleStatus('${q.id}')" title="Cycle status"></button>
+      </div>
+      <div class="card-img-area">
+        ${q.qImg?`<img src="${q.qImg}" alt="question">`:`<div class="card-img-placeholder"><svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg><span>No image yet</span></div>`}
+      </div>
+      <div class="card-footer">
+        <div class="card-qnum">Question ${q.qnum||'?'} <span class="card-qmarks">${q.marks?`[${q.marks}m]`:''}</span></div>
+        <div class="card-topic">${q.topic||'—'}</div>
+        <div class="card-links">
+          <button class="card-link" onclick="event.stopPropagation();openQView('${q.id}')">QP</button>
+          <span class="card-link-sep">|</span>
+          <button class="card-link" onclick="event.stopPropagation();openQView('${q.id}');setTimeout(()=>switchTab('ms'),50)">MS</button>
+        </div>
+      </div>
+    </div>`).join(''):`<div class="empty-state">No questions yet</div>`;
+  html+=`<div class="add-card" onclick="openModal()"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12h14"/></svg>Add question</div>`;
+  grid.innerHTML=html;
+}
+initDB().then(() => loadAllQuestions().then(qs => { questions=qs; applyFilters(); }));
+</script>
+</body>
+</html>
